@@ -45,8 +45,8 @@ class AnnualReportDownloader:
         self.base_dir = base_dir
         os.makedirs(base_dir, exist_ok=True)
 
-    def download_reports(self, company_code: str, company_name: str):
-        """Extracts annual report table and downloads PDFs"""
+    def download_reports(self, company_code: str, company_name: str, limit: int = 7):
+        """Extracts annual report table and downloads only the latest N PDFs"""
         try:
             report_table = self.wait.until(
                 EC.presence_of_element_located((By.ID, "ContentPlaceHolder1_grdAnnualReport"))
@@ -59,7 +59,10 @@ class AnnualReportDownloader:
             company_dir = os.path.join(self.base_dir, company_code.upper())
             os.makedirs(company_dir, exist_ok=True)
 
-            for row in rows[1:]:  # skip header
+            # ✅ Pick only the latest N reports (skip header row)
+            latest_rows = rows[1:limit+1]
+
+            for row in latest_rows:
                 cols = row.find_elements(By.TAG_NAME, "td")
                 if not cols:
                     continue
@@ -101,7 +104,7 @@ if __name__ == "__main__":
         searcher.search_company("INFOSYS")
 
         downloader = AnnualReportDownloader(driver, wait, base_dir)
-        downloader.download_reports("INFY", "INFOSYS")
+        downloader.download_reports("INFY", "INFOSYS", limit=7)  # ✅ now latest 7 reports
 
     finally:
         time.sleep(5)
