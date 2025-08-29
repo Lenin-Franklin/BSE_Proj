@@ -50,3 +50,4 @@ except Exception as e:
 finally:
     time.sleep(5)
     driver.quit()
+# continue from here
